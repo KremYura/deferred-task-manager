@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>DTM - demo</title>
+	<script type="text/javascript" src="../src/dtm.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/javascript">
+		var domManipulationItr = 0;
+		var dtm1 = new DTM({
+			onStart: function() {
+				domManipulationItr = 0;
+			},
+			onFinish: function() {
+				alert('domManipulationItrations = '+domManipulationItr);
+				domManipulationItr = 0;
+			}
+		});
+
+
+		var dtm2 = new DTM({
+			onFinish: function() {
+				alert('table tasks unregistred');
+			}
+		});
+
+
+		var create_dtm = function(elemID, partialItemsCount, taskName) {
+			if (dtm1.taskCount != 0) {
+				dtm1.unregister(taskName);
+			}
+
+			var ulElement = $('#'+elemID+' ul');
+			ulElement.empty();
+
+			dtm1.add(taskName, {
+				delay: 1000,
+				collection: ['li1', 'li2', 'li3', 'li4', 'li5', 'li6', 'li7', 'li8', 'li9', 'li10'],
+				partialItemsCount: partialItemsCount,
+				deferredFunction: function(items) {
+					domManipulationItr++;
+					
+					for(item in items) {
+						ulElement.append('<li>'+items[item]+'</li>');
+					}
+
+					this.endTask();
+				}
+			})
+		};
+
+		var create_table_without_DTM = function() {
+			$('#dtm4').empty();
+
+			var body = document.body,
+			tbl  = document.createElement('table');
+			tbl.style['border-collapse'] = "collapse";
+			
+			for(var i = 0; i < 100; i++){
+				var tr = tbl.insertRow();
+				for(var j = 0; j < 100; j++){
+					var td = tr.insertCell();
+					td.style['background-color'] = '#'+Math.floor(Math.random()*16777215).toString(16);
+				}
+			}
+			
+			
+			$('#dtm4').append(tbl);
+		}
+
+		var create_table = function() {
+			dtm2.unregisterAll();
+			$('#dtm3').empty();
+
+			var body = document.body,
+			tbl  = document.createElement('table');
+			tbl.style['border-collapse'] = "collapse";
+			$('#dtm3').append(tbl);
+
+			dtm2.add('create_table', {
+				delay: 200,
+				collection: new Array(100),
+				partialItemsCount: 1,
+				deferredFunction: function(items) {
+					var iterations = items.length;
+					while (iterations > 0) {
+						var tr = tbl.insertRow();
+						for(var j = 0; j < 100; j++){
+							var td = tr.insertCell();
+							td.style['background-color'] = '#'+Math.floor(Math.random()*16777215).toString(16);
+						}
+						iterations--;
+					}
+
+					this.endTask();
+				}
+			})
+		}
+
+
+		/*var dtm = new DTM({});
+
+		dtm.add('t1', {
+			delay: 100,
+			collection: [1,2,3,4],
+			partialItemsCount: 1,
+			deferredFunction: function(items) {
+				console.log(items);
+
+				this.endTask();
+			}
+		});
+
+		dtm.add('t1', {
+			collection: [5,6,7,8]
+		});*/
+	</script>
+	<style type="text/css">
+		.dtm {
+			width: 200px;
+			float: left;
+			padding: 1px;
+		}
+		td {
+			height: 1px;
+			width: 1px;
+			background-color: #f34;
+		}
+	</style>
+</head>
+<body>
+	<div>DTM Demo:</div>
+	<div>
+		<button onclick='create_dtm("dtm1", 1, "create_li1");'>create (10) li elements by 1</button>
+		<button onclick='create_dtm("dtm2", 5, "create_li2");'>create (10) li elements by 5</button>
+		<button onclick='create_table();'>create_table with DTM</button>
+		<button onclick='create_table_without_DTM();'>create_table without DTM </button>
+	</div>
+	<div id="dtm1" class="dtm">
+		<ul></ul>
+	</div>
+	<div id="dtm2" class="dtm">
+		<ul></ul>
+	</div>
+	<div id="dtm3" class="dtm"></div>
+	<div id="dtm4" class="dtm"></div>
+</body>
+</html>
