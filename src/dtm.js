@@ -26,15 +26,12 @@ DTM.prototype = {
 		}
 
 		if (this.tasks[name]) {
-			//debugger;
 			this.tasks[name].extendCollection(params.collection);
-		} else /*if (params.collection.length > 0)*/ {
+		} else {
 			this.tasks[name] = new DTM.Task(name, params, this);
 			this.taskCount++;
 			this.tasks[name].startTask();
-			//this.initTaskTimeout(name);
 		}
-		//console.log(tasks);
 	},
 	unregister: function(name) {
 		if (this.tasks[name]) {
@@ -62,14 +59,12 @@ DTM.Task = function(name, params, dtm) {
 	
 	params = params || {};
 
-	//this.sandbox = sandbox;
-
 	this.name = name;
 	this.single = params.single || false;
 	this.collection = [].concat(params.collection || []);
 	this.delay = params.delay || 0;
 	this.partialItemsCount = params.partialItemsCount || 1;
-	this.deferredFunction = params.deferredFunction || function(partialItems) { this.endTask(); }; // TODO: maybe remove from public and make it private for safety
+	this.deferredFunction = params.deferredFunction || function(partialItems) { this.endTask(); };
 	this.timeout = undefined;
 
 	if (this.deferredFunction.toString().indexOf('.endTask()') == -1) {
@@ -81,15 +76,10 @@ DTM.Task = function(name, params, dtm) {
 	};
 
 	this.runDeferredFunction = function(partialItems) {
-		//var currentTask = this;
 		var status = this.deferredFunction.call(this, partialItems);
 
 		return status;
 	};
-
-	/*this.condition = function(collection, partialItems) {
-		return condition(collection, partialItems);
-	};*/
 
 	this.extendCollection = function(collection) {
 		this.collection.push.apply(this.collection, collection);
@@ -101,12 +91,7 @@ DTM.Task = function(name, params, dtm) {
 	this.startTask = function() {
 		this.timeout = setTimeout(function() {
 			var data = self.getPartialItems();
-			// TODO: 'callStatus' look for another realization callStatus
-			// 		 to fix problem with multiple requests to SERVICE 
 			self.runDeferredFunction(data);
-			//if (callStatus == false) {
-			///	self.extendCollection(data);
-			//}
 		}, this.delay);
 	};
 
