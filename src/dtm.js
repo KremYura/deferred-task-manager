@@ -100,7 +100,9 @@ DTM.prototype = {
 	},
 	unregisterAll: function() {
 		for (var name in this.tasks) {
-			this.unregister(name);
+			if (this.tasks.hasOwnProperty‎(name)) {
+				this.unregister(name);
+			}
 		}
 	}
 };
