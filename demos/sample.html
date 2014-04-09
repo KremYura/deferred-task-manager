@@ -42,8 +42,6 @@
 					for(item in items) {
 						ulElement.append('<li>'+items[item]+'</li>');
 					}
-
-					this.endTask();
 				}
 			})
 		};
@@ -90,8 +88,6 @@
 						}
 						iterations--;
 					}
-
-					this.endTask();
 				}
 			})
 		}
@@ -105,8 +101,6 @@
 			partialItemsCount: 1,
 			deferredFunction: function(items) {
 				console.log(items);
-
-				this.endTask();
 			}
 		});
 

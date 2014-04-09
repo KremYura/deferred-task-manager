@@ -17,11 +17,14 @@ var DTM = function(params) {
 		this.collection = [].concat(params.collection || []);
 		this.delay = params.delay || 0;
 		this.partialItemsCount = params.partialItemsCount || 1;
-		this.deferredFunction = params.deferredFunction || function(partialItems) { this.endTask(); };
+		this.deferredFunction = getTaskFunction(params.deferredFunction);
 		this.timeout = undefined;
 
-		if (this.deferredFunction.toString().indexOf('.endTask()') == -1) {
-			alert('Task: "'+name+'" initialized without endTask method call. Please add this.endTask(); in deferredFunction logic');
+		function getTaskFunction(func) {
+			return function() {
+				func && func.apply(this, arguments);
+				this.endTask();
+			}
 		}
 
 		this.getPartialItems = function() {
@@ -100,7 +103,7 @@ DTM.prototype = {
 	},
 	unregisterAll: function() {
 		for (var name in this.tasks) {
-			if (this.tasks.hasOwnProperty‎(name)) {
+			if ( this.tasks.hasOwnProperty(name) ) {
 				this.unregister(name);
 			}
 		}
