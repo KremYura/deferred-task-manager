@@ -1,7 +1,7 @@
 ( function( exports ) {
 	'use strict';
 
-	function Task(name, params, dtm) {
+	function Task1(name, params, dtm) {
 		var self = this;
 		
 		params = params || {};
@@ -53,7 +53,44 @@
 				dtm.unregister(this.name);
 			}
 		};
+	}
+
+	function Iterator( collection, step ) {
+		this.index = 0;
+		this.step = step || 1;
+		this.items = collection;
+	}
+
+	Iterator.prototype = {
+		first: function() {
+			this.reset();
+			return this.next();
+		},
+		next: function() {
+			var _items = Array.prototype.slice.call(this.items, this.index, this.index + this.step);
+			this.index += this.step;
+			return _items;
+		},
+		hasNext: function() {
+			return this.index <= this.items.length + this.step;
+		},
+		reset: function() {
+			this.index = 0;
+		},
+		each: function(callback) {
+			for (var item = this.first(); this.hasNext(); item = this.next()) {
+				callback(item);
+			}
+		}
 	};
+
+	function Task(cb, partialItems, partialItemsCount) {
+
+		this.run = function() {
+			//cb.apply(this, Array.prototype.slice.call(arguments, 1));
+			cb.apply(this, arguments);
+		};
+	}
 
 	function DTM(params) {
 		params = params || {};
@@ -63,7 +100,7 @@
 		
 		this.onStart = params.onStart || this.onStart;
 		this.onFinish = params.onFinish || this.onFinish;
-	};
+	}
 
 	DTM.prototype = {
 		onStart: function() {
@@ -85,7 +122,7 @@
 			if (this.tasks[name]) {
 				this.tasks[name].extendCollection(params.collection);
 			} else {
-				this.tasks[name] = new Task(name, params, this);
+				this.tasks[name] = new Task1(name, params, this);
 				this.taskCount++;
 				this.tasks[name].startTask();
 			}
@@ -114,4 +151,6 @@
 	};
 
 	exports.DTM = DTM;
+	exports.Task = Task;
+	exports.Iterator = Iterator;
 }( this ) );
