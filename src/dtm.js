@@ -67,19 +67,25 @@
 			return this.next();
 		},
 		next: function() {
-			var _items = Array.prototype.slice.call(this.items, this.index, this.index + this.step);
-			this.index += this.step;
-			return _items;
+			var nextIndex = this.index + this.step,
+				items = Array.prototype.slice.call(this.items, this.index, nextIndex);
+			this.index = nextIndex;
+			return {
+				value: items.length ? items : undefined,
+				done: this.done()
+			};
 		},
-		hasNext: function() {
-			return this.index <= this.items.length + this.step;
+		done: function() {
+			return this.index >= this.items.length + this.step;
 		},
 		reset: function() {
 			this.index = 0;
 		},
-		each: function(callback) {
-			for (var item = this.first(); this.hasNext(); item = this.next()) {
-				callback(item);
+		each: function( callback ) {
+			var item = this.first();
+			while (!item.done) {
+				callback( item.value );
+				item = this.next();
 			}
 		}
 	};
