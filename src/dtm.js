@@ -4,15 +4,18 @@
 	function Task(collection, delay, deferredFunction) {
 		this.timeout = null;
 		
-		this.next = function() {
+		this.start = this.next = function() {
 			var items = collection.next().value;
 
 			if ( items ) {
-				this.start( items );
+				this.run( items );
 			}
 		};
 
-		this.start = function(items) {
+		this.run = function(items) {
+			/*
+			 * TODO: fix flow with manual call
+			 */
 			var ctx = this;
 			this.timeout = setTimeout(function() {
 				deferredFunction.call(ctx, items);
@@ -25,10 +28,6 @@
 				clearTimeout(this.timeout);
 				this.timeout = null;
 			}
-		};
-
-		this.run = function() {
-			this.next();
 		};
 	}
 
@@ -71,60 +70,44 @@
 		params = params || {};
 		
 		this.tasks = { };
-		this.taskCount = 0;
-		
-		this.onStart = params.onStart || this.onStart;
-		this.onFinish = params.onFinish || this.onFinish;
+		this.tasksCount = 0;
 	}
 
 	DTM.prototype = {
-		onStart: function() {
-			//console.log('onStart');
-		},
-		onFinish: function() {
-			//console.log('onFinish');
-		},
-		add: function(name, params) {
-			if (this.taskCount === 0) {
-				this.onStart();
+		add: function(name, callback, collection, delay, chunk, single) {
+			if (arguments.length < 3) {
+				console.warn('Please specify: name, callback, collection');
+				return;
 			}
+			
+			chunk = chunk || 1;
+			delay = delay || 0;
+			single = single || false;
 
-			if (params.single) {
-				this.unregister(name);
-				params.collection = ["single"];
+
+			if (single) {
+				this.unregister( name );
+				collection = new Array(1);
+				chunk = 1;
 			}
 
 			if (this.tasks[name]) {
-				this.tasks[name].extendCollection(params.collection);
+				// this.tasks[name].extendCollection(collection);
 			} else {
-				//this.tasks[name] = new Task1(name, params, this);
-				//debugger;
-				this.tasks[name] = new Iterator( params.collection, params.partialItemsCount );
+				var collectionIterator = new Iterator( collection, chunk );
+				var task = new Task( collectionIterator, delay, callback );
+
+				this.tasks[name] = task;
 				this.taskCount++;
-				this.startTask( this.tasks[name], params.delay, params.deferredFunction );
+				task.run();
 			}
-		},
-		startTask: function( collectionIterator, delay, deferredFunction ) {
-			/*task.each(function( items ) {
-				setTimeout( function() {
-					deferredFunction( items );
-				}, delay );
-			});*/
-			var task = new Task(collectionIterator, delay, deferredFunction);
-			task.run();
 		},
 		unregister: function(name) {
-			if (this.tasks[name]) {
-				if (this.tasks[name].timeout) {
-					clearTimeout(this.tasks[name].timeout);
-					this.tasks[name].timeout = null;
-				}
+			var task = this.tasks[name];
+			if (task) {
+				task.stop();
 				this.taskCount--;
 				delete this.tasks[name];
-			}
-
-			if (this.taskCount === 0) {
-				this.onFinish();
 			}
 		},
 		unregisterAll: function() {
