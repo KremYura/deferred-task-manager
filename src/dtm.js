@@ -1,57 +1,34 @@
 ( function( exports ) {
 	'use strict';
 
-	function Task1(name, params, dtm) {
-		var self = this;
+	function Task(collection, delay, deferredFunction) {
+		this.timeout = null;
 		
-		params = params || {};
+		this.next = function() {
+			var items = collection.next().value;
 
-		this.name = name;
-		this.single = params.single || false;
-		this.collection = [].concat(params.collection || []);
-		this.delay = params.delay || 0;
-		this.partialItemsCount = params.partialItemsCount || 1;
-		this.deferredFunction = getTaskFunction(params.deferredFunction);
-		this.timeout = undefined;
-
-		function getTaskFunction(func) {
-			return function() {
-				func && func.apply(this, arguments);
-				this.endTask();
+			if ( items ) {
+				this.start( items );
 			}
-		}
-
-		this.getPartialItems = function() {
-			return this.collection.splice(0, this.partialItemsCount || 1);
 		};
 
-		this.runDeferredFunction = function(partialItems) {
-			var status = this.deferredFunction.call(this, partialItems);
-
-			return status;
-		};
-
-		this.extendCollection = function(collection) {
-			this.collection.push.apply(this.collection, collection);
-			//var _spliceHelper = [0,0];
-			//_spliceHelper.push.apply(_spliceHelper, collection);
-			//this.collection.splice.apply(this.collection, _spliceHelper);
-		};
-
-		this.startTask = function() {
+		this.start = function(items) {
+			var ctx = this;
 			this.timeout = setTimeout(function() {
-				var data = self.getPartialItems();
-				self.runDeferredFunction(data);
-			}, this.delay);
+				deferredFunction.call(ctx, items);
+				ctx.next();
+			}, delay);
 		};
 
-		this.endTask = function() {
-			this.timeout = null;
-			if (this.collection.length > 0) {
-				this.startTask();
-			} else {
-				dtm.unregister(this.name);
+		this.stop = function() {
+			if (this.timeout) {
+				clearTimeout(this.timeout);
+				this.timeout = null;
 			}
+		};
+
+		this.run = function() {
+			this.next();
 		};
 	}
 
@@ -75,7 +52,7 @@
 				done: this.done()
 			};
 		},
-		done: function() {
+		done: function() { // returns !hasNext
 			return this.index >= this.items.length + this.step;
 		},
 		reset: function() {
@@ -89,14 +66,6 @@
 			}
 		}
 	};
-
-	function Task(cb, partialItems, partialItemsCount) {
-
-		this.run = function() {
-			//cb.apply(this, Array.prototype.slice.call(arguments, 1));
-			cb.apply(this, arguments);
-		};
-	}
 
 	function DTM(params) {
 		params = params || {};
@@ -128,10 +97,21 @@
 			if (this.tasks[name]) {
 				this.tasks[name].extendCollection(params.collection);
 			} else {
-				this.tasks[name] = new Task1(name, params, this);
+				//this.tasks[name] = new Task1(name, params, this);
+				//debugger;
+				this.tasks[name] = new Iterator( params.collection, params.partialItemsCount );
 				this.taskCount++;
-				this.tasks[name].startTask();
+				this.startTask( this.tasks[name], params.delay, params.deferredFunction );
 			}
+		},
+		startTask: function( collectionIterator, delay, deferredFunction ) {
+			/*task.each(function( items ) {
+				setTimeout( function() {
+					deferredFunction( items );
+				}, delay );
+			});*/
+			var task = new Task(collectionIterator, delay, deferredFunction);
+			task.run();
 		},
 		unregister: function(name) {
 			if (this.tasks[name]) {
