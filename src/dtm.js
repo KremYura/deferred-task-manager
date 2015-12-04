@@ -12,7 +12,7 @@
 			}
 		};
 
-		this.run = function(items) {
+		this.run = function( items ) {
 			/*
 			 * TODO: fix flow with manual call
 			 */
@@ -26,6 +26,7 @@
 		this.stop = function() {
 			if (this.timeout) {
 				clearTimeout(this.timeout);
+				collection.reset(1);
 				this.timeout = null;
 			}
 		};
@@ -42,6 +43,10 @@
 			this.reset();
 			return this.next();
 		},
+		prev: function() {
+			this.index = this.index > 0 ? this.index - this.step : 0;
+			return this.next();
+		},
 		next: function() {
 			var nextIndex = this.index + this.step,
 				items = Array.prototype.slice.call(this.items, this.index, nextIndex);
@@ -54,8 +59,8 @@
 		done: function() { // returns !hasNext
 			return this.index >= this.items.length + this.step;
 		},
-		reset: function() {
-			this.index = 0;
+		reset: function( steps ) {
+			this.index = steps ? this.index - this.step * steps : 0;
 		},
 		each: function( callback ) {
 			var item = this.first();
