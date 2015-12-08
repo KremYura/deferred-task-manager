@@ -1,5 +1,12 @@
 ( function( exports ) {
 	'use strict';
+	function toArray(obj) {
+		var array = [];
+		for (var key in obj) {
+			if (obj.hasOwnProperty(key)) { array.push(obj[key]); }
+		}
+		return array;
+	}
 
 	function Task(collection, delay, deferredFunction) {
 		this.timeout = null;
@@ -35,7 +42,7 @@
 	function Iterator( collection, step ) {
 		this.index = 0;
 		this.step = step || 1;
-		this.items = collection;
+		this.items = toArray( collection );
 	}
 
 	Iterator.prototype = {
