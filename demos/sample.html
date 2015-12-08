@@ -25,25 +25,24 @@
 
 
 		var create_dtm = function(elemID, partialItemsCount, taskName) {
-			if (dtm1.taskCount != 0) {
+			/*if (dtm1.taskCount != 0) {
 				dtm1.unregister(taskName);
-			}
+			}*/
 
 			var ulElement = $('#'+elemID+' ul');
 			ulElement.empty();
 
-			dtm1.add(taskName, {
-				delay: 1000,
-				collection: ['li1', 'li2', 'li3', 'li4', 'li5', 'li6', 'li7', 'li8', 'li9', 'li10'],
-				partialItemsCount: partialItemsCount,
-				deferredFunction: function(items) {
-					domManipulationItr++;
-					
-					for(item in items) {
-						ulElement.append('<li>'+items[item]+'</li>');
-					}
+			var procc = function(items) {
+				domManipulationItr++;
+				
+				for(var item in items) {
+					ulElement.append('<li>'+items[item]+'</li>');
 				}
-			})
+			};
+
+			var lis = ['li1', 'li2', 'li3', 'li4', 'li5', 'li6', 'li7', 'li8', 'li9', 'li10'];
+
+			dtm1.add(taskName, procc, lis, 1000, 1);
 		};
 
 		var create_table_without_DTM = function() {
