@@ -1,6 +1,11 @@
 ( function( exports ) {
 	'use strict';
-	function toArray(obj) {
+
+	/*
+	 * Returns Array of object values
+	 * TODO: implement `keys` storing for Objects (`index` - for Arrays)
+	 */
+	function toArray( obj ) {
 		var array = [];
 		for (var key in obj) {
 			if (obj.hasOwnProperty(key)) { array.push(obj[key]); }
